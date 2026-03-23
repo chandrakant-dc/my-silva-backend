@@ -84,3 +84,12 @@ export const verifyAdmin2FA = async (req: Request, res: Response) => {
         })
     }
 };
+
+export const logoutAdmin = (req: Request, res: Response) => {
+    res.clearCookie("token");
+    res.json({ status: true, message: "admin logged out" });
+};
+
+export const checkToken = (req: Request, res: Response) => {
+    res.status(200).json({ status: true });
+}

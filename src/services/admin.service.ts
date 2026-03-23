@@ -108,9 +108,24 @@ export const verifyAdmin2FAService = async (req: Request, res: Response) => {
 
         const userPayload = { id: admin.id };
         const accessToken = generateAccessToken(userPayload);
+
+        res.cookie("token", accessToken, {
+            httpOnly: true,
+            secure: false, // true in production (HTTPS)
+            sameSite: "lax",
+            maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
+        });
+
+        // for production
+        // res.cookie("token", accessToken, {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: "none",
+        //     maxAge: 1 * 24 * 60 * 60 * 1000,
+        // });
+
         return res.status(200).json({
-            message: "admin login successfully!",
-            accessToken: accessToken
+            message: "admin login successfully!"
         });
     } catch (error) {
         throw error;
