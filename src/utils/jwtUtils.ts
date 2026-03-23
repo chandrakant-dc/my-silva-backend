@@ -5,6 +5,6 @@ export function generateAccessToken(userPayload: string | object | Buffer<ArrayB
     return jwt.sign(
         userPayload,
         secret,
-        { expiresIn: '15m' }
+        { expiresIn: '1d' }
     );
 }

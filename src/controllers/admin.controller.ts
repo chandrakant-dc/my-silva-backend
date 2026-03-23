@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
-import { loginAdminModel, registerAdminModel, verifyAdminOtpModel } from "../services/admin.service";
+import { loginAdminModel, registerAdminModel, verifyAdmin2FAService, verifyAdminOtpModel } from "../services/admin.service";
+import { generate2FA } from '../services/twofa.service';
 
 export const registerAdmin = async (req: Request, res: Response) => {
     try {
@@ -21,9 +22,13 @@ export const registerAdmin = async (req: Request, res: Response) => {
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
+        const { encryptedSecret, qrCode } = await generate2FA(email);
+
         const adminInfo = {
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            twoFactorSecret: encryptedSecret,
+            twoFactorEnabled: true,
         }
         const isAdminExist = await registerAdminModel(adminInfo);
 
@@ -35,7 +40,8 @@ export const registerAdmin = async (req: Request, res: Response) => {
         }
 
         res.status(201).json({
-            message: "admin registered successfully!"
+            message: "admin registered successfully!",
+            qrCode
         })
     } catch (error) {
         res.status(400).json({
@@ -60,6 +66,17 @@ export const loginAdmin = async (req: Request, res: Response) => {
 export const verifyOtp = async (req: Request, res: Response) => {
     try {
         await verifyAdminOtpModel(req, res);
+    } catch (error) {
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
+    }
+};
+
+export const verifyAdmin2FA = async (req: Request, res: Response) => {
+    try {
+        await verifyAdmin2FAService(req, res);
     } catch (error) {
         res.status(400).json({
             message: "something went wrong",

@@ -6,6 +6,8 @@ export interface IAdmin {
     createdAt?: Date;
     otp?: string | undefined,
     otpExpires?: Date | undefined,
+    twoFactorEnabled: boolean,
+    twoFactorSecret: string
 }
 
 
@@ -21,6 +23,13 @@ const userSchema = new Schema<IAdmin>({
     },
     otp: String,
     otpExpires: Date,
+    twoFactorEnabled: {
+        type: Boolean,
+        default: true,
+    },
+    twoFactorSecret: {
+        type: String,
+    },
     createdAt: { type: Date, default: Date.now }
 })
 

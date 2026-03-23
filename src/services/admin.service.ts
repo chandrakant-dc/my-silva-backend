@@ -1,11 +1,12 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
-import Admin, { type IAdmin } from "../models/admin.model";
+import Admin from "../models/admin.model";
 import { generateOtp } from "../utils/generateOtp";
 import { generateAccessToken } from '../utils/jwtUtils';
 import { sendOtpEmail } from "./email.service";
+import { verify2FA } from './twofa.service';
 
-export const registerAdminModel = async (data: IAdmin) => {
+export const registerAdminModel = async (data: { email: string, password: string, twoFactorSecret: string, twoFactorEnabled: boolean }) => {
     try {
         const alreadyExistAdmin = await Admin.findOne({ email: data?.email });
         if (alreadyExistAdmin) {
@@ -80,9 +81,34 @@ export const verifyAdminOtpModel = async (req: Request, res: Response) => {
             { $unset: { otp: "", otpExpires: "" } }
         );
 
+        res.status(200).json({
+            message: "email otp verified successfully!",
+            adminId: admin.id
+        });
+    } catch (error) {
+        throw error;
+    }
+}
+
+export const verifyAdmin2FAService = async (req: Request, res: Response) => {
+    try {
+        const { adminId, token } = req.body;
+
+        const admin = await Admin.findById(adminId);
+
+        if (!admin) {
+            return res.status(404).json({ message: "admin not found!" });
+        }
+
+        const isValid = verify2FA(admin.twoFactorSecret, token);
+
+        if (!isValid) {
+            return res.status(400).json({ message: "Invalid 2FA code" });
+        }
+
         const userPayload = { id: admin.id };
         const accessToken = generateAccessToken(userPayload);
-        res.status(200).json({
+        return res.status(200).json({
             message: "admin login successfully!",
             accessToken: accessToken
         });
