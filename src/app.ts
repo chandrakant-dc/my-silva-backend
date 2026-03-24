@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import express from "express";
 import adminRoutes from "./routes/admin.routes";
 import categoryRoutes from "./routes/category.routes";
+import subcategoryRoutes from "./routes/subcategory.routes";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1/admin", adminRoutes);
-app.use("/api/v1/category", categoryRoutes)
+app.use("/api/v1/category", categoryRoutes);
+app.use("/api/v1/subcategory", subcategoryRoutes);
 
 export default app;
