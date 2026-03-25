@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createSubCategoryModel, deleteSubCategoryModel, getAllSubCategoryModel, updateSubCategoryModel } from "../services/subcategory.service";
+import { createSubCategoryModel, deleteSubCategoryModel, getAllSubCategoryModel, getSubCategoryByCategoryIdModel, updateSubCategoryModel } from "../services/subcategory.service";
 // import { createCategoryModel, deleteCategoryModel, getAllCategoryModel, updateCategoryModel } from "../services/category.service";
 
 
@@ -39,6 +39,17 @@ export const deleteSubCategory = async (req: Request, res: Response) => {
 export const getAllSubCategory = async (req: Request, res: Response) => {
     try {
         await getAllSubCategoryModel(req, res);
+    } catch (error) {
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
+    }
+}
+
+export const getSubCategoryByCategoryId = async (req: Request, res: Response) => {
+    try {
+        await getSubCategoryByCategoryIdModel(req, res);
     } catch (error) {
         res.status(400).json({
             message: "something went wrong",

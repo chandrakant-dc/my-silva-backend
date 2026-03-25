@@ -159,3 +159,20 @@ export const getAllSubCategoryModel = async (req: Request, res: Response) => {
         });
     }
 }
+
+export const getSubCategoryByCategoryIdModel = async (req: Request, res: Response) => {
+    try {
+        const categoryId = req.params.categoryId as string;
+
+        const allSubCategory = await SubCategory.find({ category: categoryId });
+        res.status(200).json({
+            status: true,
+            data: allSubCategory
+        })
+    } catch (error: any) {
+        return res.status(500).json({
+            status: false,
+            message: error.message || "Internal server error"
+        });
+    }
+}
