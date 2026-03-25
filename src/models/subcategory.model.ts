@@ -3,6 +3,8 @@ import mongoose, { model, Schema } from "mongoose";
 export interface SubCategoryI {
     name: string;
     category: mongoose.Types.ObjectId;
+    image: string;
+    description: string;
 }
 
 const subcategorySchema = new Schema<SubCategoryI>({
@@ -16,7 +18,15 @@ const subcategorySchema = new Schema<SubCategoryI>({
         type: Schema.Types.ObjectId,
         ref: "Categories",
         required: true
-    }
+    },
+    image: {
+        type: String,
+        required: true,
+    },
+    description: {
+        type: String,
+        required: true,
+    },
 }
 )
 

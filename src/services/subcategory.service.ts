@@ -1,10 +1,22 @@
 import type { Request, Response } from "express";
+import fs from "fs";
 import mongoose from "mongoose";
+import path from "path";
 import SubCategory from "../models/subcategory.model";
 
 export const createSubCategoryModel = async (req: Request, res: Response) => {
     try {
-        const { name, categoryId } = req.body;
+        const { name, categoryId, description } = req.body;
+        const imageUrl = req.file
+            ? `${req.protocol}://${req.get("host")}/uploads/subcategories/${req.file.filename}`
+            : "";
+
+        if (!imageUrl) {
+            return res.status(400).json({
+                message: "image is required"
+            })
+        }
+
         if (!name) {
             return res.status(400).json({
                 message: "name is required"
@@ -25,7 +37,7 @@ export const createSubCategoryModel = async (req: Request, res: Response) => {
             });
         }
 
-        await SubCategory.create({ name, category: categoryId });
+        await SubCategory.create({ name, category: categoryId, image: imageUrl, description });
 
         return res.status(201).json({
             status: true,
@@ -41,7 +53,7 @@ export const createSubCategoryModel = async (req: Request, res: Response) => {
 
 export const updateSubCategoryModel = async (req: Request, res: Response) => {
     try {
-        const { name, categoryId, id } = req.body;
+        const { name, categoryId, id, description } = req.body;
 
         if (!categoryId) {
             return res.status(400).json({
@@ -78,9 +90,36 @@ export const updateSubCategoryModel = async (req: Request, res: Response) => {
             });
         }
 
+        const subcategory = await SubCategory.findById(id);
+        if (!subcategory) {
+            return res.status(404).json({
+                status: false,
+                message: "SubCategory not found"
+            });
+        }
+
+        let imageUrl = subcategory.image;
+
+        if (req.file) {
+            if (subcategory.image) {
+                const oldImagePath = subcategory.image.split("/uploads/")[1];
+                const fullPath = path.join("uploads", oldImagePath || "");
+
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            }
+
+            imageUrl = `${req.protocol}://${req.get("host")}/uploads/subcategories/${req.file.filename}`;
+        }
+
         const updatedCategory = await SubCategory.findByIdAndUpdate(
             id,
-            { name: name.trim() },
+            {
+                name: name.trim(),
+                image: imageUrl,
+                description
+            },
             { new: true }
         );
 

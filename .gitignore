@@ -73,3 +73,5 @@ temp/
 # TypeScript incremental build info
 
 *.tsbuildinfo
+
+/uploads
