@@ -43,7 +43,21 @@ export const createTopic = async (req: Request, res: Response) => {
 
 export const getAllTopics = async (req: Request, res: Response) => {
     try {
+        const { category, subcategory } = req.query;
+
+        const matchStage: any = {};
+
+        if (category) {
+            matchStage.category = new mongoose.Types.ObjectId(category as string);
+        }
+
+        if (subcategory) {
+            matchStage.subcategory = new mongoose.Types.ObjectId(subcategory as string);
+        }
         const topics = await Topic.aggregate([
+            {
+                $match: matchStage
+            },
             {
                 $lookup: {
                     from: "questions",
