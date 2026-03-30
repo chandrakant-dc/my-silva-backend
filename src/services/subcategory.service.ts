@@ -203,15 +203,124 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
     try {
         const categoryId = req.params.categoryId as string;
 
-        const allSubCategory = await SubCategory.find({ category: categoryId });
+        const subcategories = await SubCategory.aggregate([
+            {
+                $match: {
+                    category: new mongoose.Types.ObjectId(categoryId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "topics",
+                    localField: "_id",
+                    foreignField: "subcategory",
+                    as: "topics"
+                }
+            },
+            {
+                $addFields: {
+                    topicCount: { $size: "$topics" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "category",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            {
+                $unwind: "$category"
+            },
+            {
+                $project: {
+                    name: 1,
+                    description: 1,
+                    image: 1,
+                    topicCount: 1,
+                    "category._id": 1,
+                    "category.name": 1
+                }
+            }
+        ]);
+
         res.status(200).json({
             status: true,
-            data: allSubCategory
-        })
+            data: subcategories
+        });
+
     } catch (error: any) {
         return res.status(500).json({
             status: false,
             message: error.message || "Internal server error"
         });
     }
-}
+};
+
+
+export const getSubCategoryByIdModel = async (req: Request, res: Response) => {
+    try {
+        const subCategoryId = req.params.subCategoryId as string;
+
+        if (!mongoose.Types.ObjectId.isValid(subCategoryId)) {
+            return res.status(400).json({
+                status: false,
+                message: "Invalid SubCategory ID"
+            });
+        }
+
+        const subcategory = await SubCategory.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(subCategoryId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "topics",
+                    localField: "_id",
+                    foreignField: "subcategory",
+                    as: "topics"
+                }
+            },
+            {
+                $addFields: {
+                    topicCount: { $size: "$topics" }
+                }
+            },
+            {
+                $lookup: {
+                    from: "categories",
+                    localField: "category",
+                    foreignField: "_id",
+                    as: "category"
+                }
+            },
+            {
+                $unwind: "$category"
+            },
+            {
+                $project: {
+                    name: 1,
+                    description: 1,
+                    image: 1,
+                    topicCount: 1,
+                    "category._id": 1,
+                    "category.name": 1
+                }
+            }
+        ]);
+
+        res.status(200).json({
+            status: true,
+            data: subcategory[0] || null
+        });
+
+    } catch (error: any) {
+        return res.status(500).json({
+            status: false,
+            message: error.message || "Internal server error"
+        });
+    }
+};

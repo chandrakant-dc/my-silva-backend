@@ -205,3 +205,78 @@ export const updateTopic = async (req: Request, res: Response) => {
         });
     }
 };
+
+export const getAllTopicsByCategoryId = async (req: Request, res: Response) => {
+    try {
+        const { subcategory } = req.query;
+
+        const matchStage: any = {};
+
+        if (subcategory) {
+            matchStage.subcategory = new mongoose.Types.ObjectId(subcategory as string);
+        }
+        const topics = await Topic.find({ subcategory: matchStage.subcategory });
+        res.status(200).json({
+            status: true,
+            data: topics
+        })
+    } catch (error) {
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
+    }
+}
+
+export const getTopicDetailsById = async (req: Request, res: Response) => {
+    try {
+        const topicId = req.params.topicId as string;
+
+        const matchStage: any = {};
+
+        if (topicId) {
+            matchStage.topicId = new mongoose.Types.ObjectId(topicId as string);
+        }
+        const topics = await Topic.find({ _id: matchStage.topicId });
+        res.status(200).json({
+            status: true,
+            data: topics[0] || null
+        })
+    } catch (error) {
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
+    }
+}
+
+export const getQuestionsByTopicId = async (req: Request, res: Response) => {
+    try {
+        const topicId = req.params.topicId as string;
+
+        const matchStage: any = {};
+
+        if (topicId) {
+            matchStage.topicId = new mongoose.Types.ObjectId(topicId as string);
+        }
+        const topics = await Questions.find({ topic: matchStage.topicId }).select("-answer");
+        res.status(200).json({
+            status: true,
+            data: topics
+        })
+    } catch (error) {
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
+    }
+}
+
+export const topicTestQuizSubmit = async (req: Request, res: Response) => {
+    try {
+        const { questions } = req.body;
+
+    } catch (error) {
+
+    }
+}
