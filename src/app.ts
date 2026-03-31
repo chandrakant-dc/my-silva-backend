@@ -17,7 +17,8 @@ dotenv.config();
 
 const allowedOrigins = [
     "http://localhost:5173",
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://vikas-circle-admin01.netlify.app"
 ]
 
 const app = express();
