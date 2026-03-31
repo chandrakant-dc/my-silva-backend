@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import fs from "fs";
 import mongoose from "mongoose";
 import path from "path";
-import Category from "../models/category.model";
+import Category from "../models/category.model.js";
 
 export const createCategoryModel = async (req: Request, res: Response) => {
     try {

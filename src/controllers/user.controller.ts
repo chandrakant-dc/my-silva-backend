@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { getAllUsers, registerUserModel } from "../services/user.service";
+import { getAllUsers, registerUserModel } from "../services/user.service.js";
 
 export const getUsers = async (req: Request, res: Response) => {
     const users = await getAllUsers();

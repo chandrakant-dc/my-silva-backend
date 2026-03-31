@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { checkToken, loginAdmin, logoutAdmin, registerAdmin, verifyAdmin2FA, verifyOtp } from "../controllers/admin.controller";
-import { authMiddleware } from "../middleware/auth";
-import { validate } from "../middleware/validate";
-import { createAdminSchema } from "../schemas/admin.schema";
+import { checkToken, loginAdmin, logoutAdmin, registerAdmin, verifyAdmin2FA, verifyOtp } from "../controllers/admin.controller.js";
+import { authMiddleware } from "../middleware/auth.js";
+import { validate } from "../middleware/validate.js";
+import { createAdminSchema } from "../schemas/admin.schema.js";
 
 const router = Router();
 

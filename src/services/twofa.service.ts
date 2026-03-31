@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import speakeasy from "speakeasy";
-import { decrypt, encrypt } from "../utils/encryption";
+import { decrypt, encrypt } from "../utils/encryption.js";
 
 export const generate2FA = async (email: string) => {
     const secret = speakeasy.generateSecret({

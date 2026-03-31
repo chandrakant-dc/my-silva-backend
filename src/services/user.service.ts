@@ -1,4 +1,4 @@
-import User, { type IUser } from "../models/users.model";
+import User, { type IUser } from "../models/users.model.js";
 
 export const getAllUsers = async () => {
     return [{ name: "jack", age: 90 }];

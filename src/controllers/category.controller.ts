@@ -1,5 +1,5 @@
 import type { Request, Response } from "express";
-import { createCategoryModel, deleteCategoryModel, getAllCategoryModel, updateCategoryModel } from "../services/category.service";
+import { createCategoryModel, deleteCategoryModel, getAllCategoryModel, updateCategoryModel } from "../services/category.service.js";
 
 
 export const createCategory = async (req: Request, res: Response) => {

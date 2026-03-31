@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { createTopic, deleteTopic, getAllTopics, getAllTopicsByCategoryId, getQuestionsByTopicId, getTopicDetailsById, topicTestQuizSubmit, updateTopic } from "../controllers/topic.controller";
-import { authMiddleware } from "../middleware/auth";
-import { validate } from "../middleware/validate";
-import { createTopicSchema } from "../schemas/topic.schema";
+import { createTopic, deleteTopic, getAllTopics, getAllTopicsByCategoryId, getQuestionsByTopicId, getTopicDetailsById, topicTestQuizSubmit, updateTopic } from "../controllers/topic.controller.js";
+import { authMiddleware } from "../middleware/auth.js";
+import { validate } from "../middleware/validate.js";
+import { createTopicSchema } from "../schemas/topic.schema.js";
 
 const router = Router();
 

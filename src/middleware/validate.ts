@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError, ZodType } from "zod";
-import { formatZodErrors } from "../utils/formatZodErrors";
+import { formatZodErrors } from "../utils/formatZodErrors.js";
 
 export const validate = <T>(schema: ZodType<T>) => (req: Request, res: Response, next: NextFunction) => {
     const result = schema.safeParse(req.body);

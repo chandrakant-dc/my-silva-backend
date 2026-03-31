@@ -3,10 +3,10 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import path from "path";
-import adminRoutes from "./routes/admin.routes";
-import categoryRoutes from "./routes/category.routes";
-import subcategoryRoutes from "./routes/subcategory.routes";
-import topicRoutes from "./routes/topic.routes";
+import adminRoutes from "./routes/admin.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import subcategoryRoutes from "./routes/subcategory.routes.js";
+import topicRoutes from "./routes/topic.routes.js";
 
 import { fileURLToPath } from "url";
 

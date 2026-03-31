@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { uploadCategoryImage } from "../config/category.multer";
-import { createCategory, deleteCategory, getAllCategory, updateCategory } from "../controllers/category.controller";
-import { authMiddleware } from "../middleware/auth";
+import { uploadCategoryImage } from "../config/category.multer.js";
+import { createCategory, deleteCategory, getAllCategory, updateCategory } from "../controllers/category.controller.js";
+import { authMiddleware } from "../middleware/auth.js";
 
 const router = Router();
 

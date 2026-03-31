@@ -2,7 +2,7 @@ import type { Request, Response } from "express";
 import fs from "fs";
 import mongoose from "mongoose";
 import path from "path";
-import SubCategory from "../models/subcategory.model";
+import SubCategory from "../models/subcategory.model.js";
 
 export const createSubCategoryModel = async (req: Request, res: Response) => {
     try {

@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
-import { loginAdminModel, registerAdminModel, verifyAdmin2FAService, verifyAdminOtpModel } from "../services/admin.service";
-import { generate2FA } from '../services/twofa.service';
+import { loginAdminModel, registerAdminModel, verifyAdmin2FAService, verifyAdminOtpModel } from "../services/admin.service.js";
+import { generate2FA } from '../services/twofa.service.js';
 
 export const registerAdmin = async (req: Request, res: Response) => {
     try {

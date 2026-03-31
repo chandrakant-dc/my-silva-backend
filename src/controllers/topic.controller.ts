@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import mongoose from "mongoose";
-import Questions, { type TopicQuestionsI } from "../models/question.model";
-import Topic from "../models/topic.model";
+import Questions, { type TopicQuestionsI } from "../models/question.model.js";
+import Topic from "../models/topic.model.js";
 
 export const createTopic = async (req: Request, res: Response) => {
     try {

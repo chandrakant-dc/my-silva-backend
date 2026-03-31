@@ -1,5 +1,5 @@
-import app from "./app";
-import { dbConnection } from "./config/db";
+import app from "./app.js";
+import { dbConnection } from "./config/db.js";
 const PORT = process.env.PORT || 3000;
 
 app.get('/health-check', (req, res) => {
