@@ -274,9 +274,69 @@ export const getQuestionsByTopicId = async (req: Request, res: Response) => {
 
 export const topicTestQuizSubmit = async (req: Request, res: Response) => {
     try {
-        const { questions } = req.body;
+        const { answers } = req.body;
+
+        const questionIds = answers.map((a: { questionId: string }) => a.questionId);
+
+        const questions = await Questions.find({
+            _id: { $in: questionIds }
+        }).lean();
+
+        const questionMap: Record<string, any> = {};
+        questions.forEach((q) => {
+            questionMap[q._id.toString()] = q;
+        });
+
+        let correct = 0, wrong = 0, notAnswered = 0;
+
+        answers.forEach((ans: { questionId: string; selectedOption: string }) => {
+            const q = questionMap[ans.questionId];
+
+            if (!ans.selectedOption) {
+                notAnswered++;
+            } else if (ans.selectedOption === q.answer) {
+                correct++;
+            } else {
+                wrong++;
+            }
+        });
+
+        const maxMarkPerQuestion = 5;
+        const negativeMarking = 0;
+
+        const totalQuestions = answers.length;
+
+        const maxPossibleMarks = totalQuestions * maxMarkPerQuestion;
+
+        const totalMarks =
+            correct * maxMarkPerQuestion - wrong * negativeMarking;
+
+        const scorePercent =
+            maxPossibleMarks > 0
+                ? Number(((totalMarks / maxPossibleMarks) * 100).toFixed(2))
+                : 0;
+
+        const result = {
+            total: totalQuestions,
+            correct,
+            wrong,
+            notAnswered,
+            score: totalMarks,
+            maxMarkPerQuestion,
+            negativeMarking,
+            scorePercent,
+            totalMarks: maxPossibleMarks
+        };
+
+        res.json({
+            success: true,
+            data: result
+        });
 
     } catch (error) {
-
+        res.status(400).json({
+            message: "something went wrong",
+            error: error
+        })
     }
 }
