@@ -23,12 +23,30 @@ const allowedOrigins = [
 ]
 
 const app = express();
-app.use(
-    cors({
-        origin: allowedOrigins,
-        credentials: true,
-    })
-);
+app.use(cors({
+    origin: function (origin, callback) {
+        // allow requests with no origin (mobile apps, Postman)
+        if (!origin) return callback(null, true);
+
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
+    credentials: true,
+}));
+
+app.options(/.*/, cors());
+
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    next();
+});
+
 app.use(express.json());
 app.use(cookieParser());
 app.use("/api/v1/admin", adminRoutes);
