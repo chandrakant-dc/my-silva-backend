@@ -120,7 +120,7 @@ export const verifyAdmin2FAService = async (req: Request, res: Response) => {
         res.cookie("token", accessToken, {
             httpOnly: true,
             secure: true,
-            sameSite: "strict",
+            sameSite: "none",
             maxAge: 1 * 24 * 60 * 60 * 1000,
         });
 
