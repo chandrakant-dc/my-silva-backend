@@ -89,7 +89,7 @@ export const logoutAdmin = (req: Request, res: Response) => {
     res.clearCookie("token", {
         httpOnly: true,
         secure: true, // true in production (HTTPS)
-        sameSite: "strict",
+        sameSite: "none",
     });
     res.json({ status: true, message: "admin logged out" });
 };
