@@ -1,8 +1,14 @@
 import { Router } from "express";
-import { getUsers } from "../controllers/user.controller.js";
+import { forgotPassword, getUsers, loginUser, registerUser, verifyUserOTP } from "../controllers/user.controller.js";
+import { validate } from "../middleware/validate.js";
+import { createUserSchema, loginUserSchema } from "../schemas/user.schema.js";
 
 const router = Router();
 
+router.post("/", validate(createUserSchema), registerUser);
+router.post("/login", validate(loginUserSchema), loginUser);
 router.get("/", getUsers);
+router.post("/forgot-password", forgotPassword);
+router.post("/verify-otp", verifyUserOTP);
 
 export default router;
