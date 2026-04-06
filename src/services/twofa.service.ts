@@ -4,7 +4,7 @@ import { decrypt, encrypt } from "../utils/encryption.js";
 
 export const generate2FA = async (email: string) => {
     const secret = speakeasy.generateSecret({
-        name: `MySilva (${email})`,
+        name: `Vikas Circle (${email})`,
     });
 
     const encryptedSecret = encrypt(secret.base32);
