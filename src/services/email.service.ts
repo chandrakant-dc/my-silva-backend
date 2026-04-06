@@ -12,7 +12,7 @@ export const sendOtpEmail = async (email: string, otp: string) => {
     });
 
     await transporter.sendMail({
-        from: `"My Silva" <${process.env.EMAIL_USER}>`,
+        from: `"Vikas Circle" <${process.env.EMAIL_USER}>`,
         to: email,
         subject: "Your OTP Code",
         html: `<h3>Your OTP is: ${otp}</h3>`,
