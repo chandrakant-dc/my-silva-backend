@@ -1,21 +1,29 @@
 import type { Request, Response } from "express";
-import fs from "fs";
 import mongoose from "mongoose";
-import path from "path";
+import { uploadToCloudinary } from "../config/uploadToCloudinary.js";
 import SubCategory from "../models/subcategory.model.js";
 
 export const createSubCategoryModel = async (req: Request, res: Response) => {
     try {
         const { name, categoryId, description } = req.body;
-        const imageUrl = req.file
-            ? `${req.protocol}://${req.get("host")}/uploads/subcategories/${req.file.filename}`
-            : "";
+        // const imageUrl = req.file
+        //     ? `${req.protocol}://${req.get("host")}/uploads/subcategories/${req.file.filename}`
+        //     : "";
 
-        if (!imageUrl) {
-            return res.status(400).json({
-                message: "image is required"
-            })
+        // if (!imageUrl) {
+        //     return res.status(400).json({
+        //         message: "image is required"
+        //     })
+        // }
+
+        if (!req.file) {
+            return res.status(400).json({ message: "Image required" });
         }
+
+        const result: any = await uploadToCloudinary(
+            req.file.buffer,
+            "subcategories"
+        );
 
         if (!name) {
             return res.status(400).json({
@@ -37,7 +45,7 @@ export const createSubCategoryModel = async (req: Request, res: Response) => {
             });
         }
 
-        await SubCategory.create({ name, category: categoryId, image: imageUrl, description });
+        await SubCategory.create({ name, category: categoryId, image: result.secure_url, description });
 
         return res.status(201).json({
             status: true,
@@ -101,16 +109,11 @@ export const updateSubCategoryModel = async (req: Request, res: Response) => {
         let imageUrl = subcategory.image;
 
         if (req.file) {
-            if (subcategory.image) {
-                const oldImagePath = subcategory.image.split("/uploads/")[1];
-                const fullPath = path.join("uploads", oldImagePath || "");
-
-                if (fs.existsSync(fullPath)) {
-                    fs.unlinkSync(fullPath);
-                }
-            }
-
-            imageUrl = `${req.protocol}://${req.get("host")}/uploads/subcategories/${req.file.filename}`;
+            const result: any = await uploadToCloudinary(
+                req.file.buffer,
+                "subcategories"
+            );
+            imageUrl = result.secure_url;
         }
 
         const updatedCategory = await SubCategory.findByIdAndUpdate(
@@ -118,7 +121,8 @@ export const updateSubCategoryModel = async (req: Request, res: Response) => {
             {
                 name: name.trim(),
                 image: imageUrl,
-                description
+                description,
+                category: categoryId
             },
             { new: true }
         );

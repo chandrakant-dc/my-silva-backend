@@ -1,8 +1,8 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import path from "path";
+import "./env-config.js";
 import adminRoutes from "./routes/admin.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import subcategoryRoutes from "./routes/subcategory.routes.js";
@@ -10,11 +10,8 @@ import topicRoutes from "./routes/topic.routes.js";
 
 import { fileURLToPath } from "url";
 import userRoutes from "./routes/user.routes.js";
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-dotenv.config();
 
 const app = express();
 app.use(cors({

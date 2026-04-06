@@ -1,28 +1,27 @@
 import type { Request, Response } from "express";
-import fs from "fs";
 import mongoose from "mongoose";
-import path from "path";
+import { uploadToCloudinary } from "../config/uploadToCloudinary.js";
 import Category from "../models/category.model.js";
 
 export const createCategoryModel = async (req: Request, res: Response) => {
     try {
         const { name } = req.body;
-        const imageUrl = req.file
-            ? `${req.protocol}://${req.get("host")}/uploads/categories/${req.file.filename}`
-            : "";
 
-        if (!imageUrl) {
-            return res.status(400).json({
-                message: "image is required"
-            })
+        if (!req.file) {
+            return res.status(400).json({ message: "Image required" });
         }
+
+        const result: any = await uploadToCloudinary(
+            req.file.buffer,
+            "categories"
+        );
 
         if (!name) {
             return res.status(400).json({
                 message: "name is required"
             })
         }
-        const cate = new Category({ name, image: imageUrl });
+        const cate = new Category({ name, image: result.secure_url });
         await cate.save();
         return res.status(201).json({
             status: true,
@@ -69,16 +68,13 @@ export const updateCategoryModel = async (req: Request, res: Response) => {
         let imageUrl = category.image;
 
         if (req.file) {
-            if (category.image) {
-                const oldImagePath = category.image.split("/uploads/")[1];
-                const fullPath = path.join("uploads", oldImagePath || "");
 
-                if (fs.existsSync(fullPath)) {
-                    fs.unlinkSync(fullPath);
-                }
-            }
+            const result: any = await uploadToCloudinary(
+                req.file.buffer,
+                "categories"
+            );
 
-            imageUrl = `${req.protocol}://${req.get("host")}/uploads/categories/${req.file.filename}`;
+            imageUrl = result.secure_url;
         }
 
         const updatedCategory = await Category.findByIdAndUpdate(

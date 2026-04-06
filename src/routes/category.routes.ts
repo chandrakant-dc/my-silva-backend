@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { uploadCategoryImage } from "../config/category.multer.js";
+import { uploadCategoryImage } from "../config/uploadCategoryImage.js";
 import { createCategory, deleteCategory, getAllCategory, updateCategory } from "../controllers/category.controller.js";
 import { authMiddleware } from "../middleware/auth.js";
 
