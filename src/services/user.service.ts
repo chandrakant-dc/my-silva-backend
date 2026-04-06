@@ -11,7 +11,9 @@ export const registerUserModel = async (data: IUser) => {
             return true;
         }
         const newUser = new User(data);
-        return newUser.save();
+        const savedUser = await newUser.save();
+
+        return savedUser._id;
     } catch (error) {
         throw error;
     }

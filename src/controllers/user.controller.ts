@@ -46,6 +46,25 @@ export const registerUser = async (req: Request, res: Response) => {
         }
 
         await registerUserModel(req.body);
+
+        const userPayload = { email: email };
+        const accessToken = generateAccessToken(userPayload);
+
+        // res.cookie("token", accessToken, {
+        //     httpOnly: true,
+        //     secure: false, // true in production (HTTPS)
+        //     sameSite: "lax",
+        //     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
+        // });
+
+        // for production
+        res.cookie("token", accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: "strict",
+            maxAge: 1 * 24 * 60 * 60 * 1000,
+        });
+
         res.status(201).json({
             message: "user registered successfully!"
         })
