@@ -9,7 +9,7 @@ router.post("/", authMiddleware, uploadCategoryImage.single("image"), createSubC
 router.put("/", authMiddleware, uploadCategoryImage.single("image"), updateSubCategory);
 router.delete("/:id", authMiddleware, deleteSubCategory);
 router.get("/", authMiddleware, getAllSubCategory);
-router.get("/:categoryId", getSubCategoryByCategoryId);
+router.get("/all", getSubCategoryByCategoryId);
 router.get("/details/:subCategoryId", getOneSubCateDetailsById);
 
 export default router;

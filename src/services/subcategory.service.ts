@@ -205,14 +205,19 @@ export const getAllSubCategoryModel = async (req: Request, res: Response) => {
 
 export const getSubCategoryByCategoryIdModel = async (req: Request, res: Response) => {
     try {
-        const categoryId = req.params.categoryId as string;
+        const categoryId = req.query.categoryId as string;
 
-        const subcategories = await SubCategory.aggregate([
-            {
+        const pipeline: any[] = [];
+
+        if (categoryId) {
+            pipeline.push({
                 $match: {
                     category: new mongoose.Types.ObjectId(categoryId)
                 }
-            },
+            });
+        }
+
+        pipeline.push(
             {
                 $lookup: {
                     from: "topics",
@@ -247,7 +252,9 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
                     "category.name": 1
                 }
             }
-        ]);
+        );
+
+        const subcategories = await SubCategory.aggregate(pipeline);
 
         res.status(200).json({
             status: true,
