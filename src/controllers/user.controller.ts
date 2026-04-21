@@ -7,6 +7,12 @@ import { generateOtp } from '../utils/generateOtp.js';
 import { generateAccessToken } from '../utils/jwtUtils.js';
 // import { sendOTPEmail } from '../utils/sendMail.js';
 
+interface AuthRequest extends Request {
+    user?: {
+        id: string;
+    };
+}
+
 export const getUsers = async (req: Request, res: Response) => {
     const users = await getAllUsers();
     res.json(users);
@@ -204,3 +210,22 @@ export const verifyUserOTP = async (req: Request, res: Response) => {
         })
     }
 }
+
+export const getUserDetails = async (req: AuthRequest, res: Response) => {
+    try {
+        const user = await User.findById(req.user?.id).select("-password");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user,
+        });
+    } catch (error) {
+        res.status(500).json({
+            message: "Server error",
+        });
+    }
+};

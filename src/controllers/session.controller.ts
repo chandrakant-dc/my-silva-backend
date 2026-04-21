@@ -1,12 +1,20 @@
 import type { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import { Session } from "../models/session.model.js";
-
 export const trackTime = async (req: Request, res: Response) => {
     try {
         const { timeSpent, guestId } = req.body;
+        const token = req.cookies.token;
 
-        // If you have auth middleware
-        const userId = (req as any).user?._id;
+        if (token) {
+            const decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET as string
+            );
+            (req as any).user = decoded;
+        }
+
+        const userId = (req as any).user?.id;
 
         if (!timeSpent) {
             return res.status(400).json({ message: "timeSpent required" });
