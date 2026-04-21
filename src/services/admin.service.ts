@@ -3,7 +3,8 @@ import type { Request, Response } from "express";
 import Admin from "../models/admin.model.js";
 import { generateOtp } from "../utils/generateOtp.js";
 import { generateAccessToken } from '../utils/jwtUtils.js';
-import { sendOTPEmail } from '../utils/sendMail.js';
+// import { sendOTPEmail } from '../utils/sendMail.js';
+import { sendOtpEmail } from './email.service.js';
 import { verify2FA } from './twofa.service.js';
 
 export const registerAdminModel = async (data: { email: string, password: string, twoFactorSecret: string, twoFactorEnabled: boolean }) => {
@@ -51,7 +52,7 @@ export const loginAdminModel = async (req: Request, res: Response) => {
             }
         );
 
-        await sendOTPEmail(email, otp);
+        await sendOtpEmail(email, otp);
 
         return true;
     } catch (error) {
