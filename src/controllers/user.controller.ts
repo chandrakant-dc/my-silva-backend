@@ -1,10 +1,11 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
 import User from '../models/user.model.js';
+import { sendOtpEmail } from '../services/email.service.js';
 import { getAllUsers, registerUserModel } from "../services/user.service.js";
 import { generateOtp } from '../utils/generateOtp.js';
 import { generateAccessToken } from '../utils/jwtUtils.js';
-import { sendOTPEmail } from '../utils/sendMail.js';
+// import { sendOTPEmail } from '../utils/sendMail.js';
 
 export const getUsers = async (req: Request, res: Response) => {
     const users = await getAllUsers();
@@ -142,7 +143,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
             }
         );
 
-        await sendOTPEmail(email, otp);
+        await sendOtpEmail(email, otp);
         res.status(200).json({
             message: "otp sent to mail"
         })
