@@ -3,7 +3,6 @@ import type { Request, Response } from "express";
 import Admin from "../models/admin.model.js";
 import { generateOtp } from "../utils/generateOtp.js";
 import { generateAccessToken } from '../utils/jwtUtils.js';
-// import { sendOtpEmail } from "./email.service.js";
 import { sendOTPEmail } from '../utils/sendMail.js';
 import { verify2FA } from './twofa.service.js';
 
