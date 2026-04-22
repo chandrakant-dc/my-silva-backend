@@ -229,3 +229,28 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
         });
     }
 };
+
+export const logoutUser = (req: Request, res: Response) => {
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: true, // true in production (HTTPS)
+        sameSite: "none",
+    });
+    res.json({ status: true, message: "user logged out" });
+};
+
+export const resetPassword = async (req: AuthRequest, res: Response) => {
+    try {
+        const { newPassword } = req.body;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+        await User.findByIdAndUpdate(userId, { password: hashedPassword });
+        res.status(200).json({ message: "Password reset successful" });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error });
+    }
+}

@@ -2,6 +2,13 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import Questions, { type TopicQuestionsI } from "../models/question.model.js";
 import Topic from "../models/topic.model.js";
+import UserTopicProgresses from "../models/user-topic-progress.model.js";
+
+interface AuthRequest extends Request {
+    user?: {
+        id: string;
+    };
+}
 
 export const createTopic = async (req: Request, res: Response) => {
     try {
@@ -206,7 +213,7 @@ export const updateTopic = async (req: Request, res: Response) => {
     }
 };
 
-export const getAllTopicsByCategoryId = async (req: Request, res: Response) => {
+export const getAllTopicsByCategoryId = async (req: AuthRequest, res: Response) => {
     try {
         const { subcategory } = req.query;
 
@@ -215,7 +222,60 @@ export const getAllTopicsByCategoryId = async (req: Request, res: Response) => {
         if (subcategory) {
             matchStage.subcategory = new mongoose.Types.ObjectId(subcategory as string);
         }
-        const topics = await Topic.find({ subcategory: matchStage.subcategory });
+        // const topics = await Topic.find({ subcategory: matchStage.subcategory });
+
+        const userId = req.user?.id;
+
+        const pipeline: any[] = [
+            {
+                $match: {
+                    subcategory: new mongoose.Types.ObjectId(matchStage.subcategory)
+                }
+            }
+        ];
+
+        if (userId) {
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: "usertopicprogresses",
+                        let: { topicId: "$_id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $eq: ["$topic", "$$topicId"] },
+                                            { $eq: ["$user", new mongoose.Types.ObjectId(userId)] }
+                                        ]
+                                    }
+                                }
+                            }
+                        ],
+                        as: "progress"
+                    }
+                },
+                {
+                    $addFields: {
+                        status: {
+                            $cond: [
+                                { $gt: [{ $size: "$progress" }, 0] },
+                                { $arrayElemAt: ["$progress.status", 0] },
+                                "pending"
+                            ]
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        progress: 0
+                    }
+                }
+            );
+        }
+
+        const topics = await Topic.aggregate(pipeline);
+
         res.status(200).json({
             status: true,
             data: topics
@@ -272,9 +332,9 @@ export const getQuestionsByTopicId = async (req: Request, res: Response) => {
     }
 }
 
-export const topicTestQuizSubmit = async (req: Request, res: Response) => {
+export const topicTestQuizSubmit = async (req: AuthRequest, res: Response) => {
     try {
-        const { answers } = req.body;
+        const { answers, topicId } = req.body;
 
         const questionIds = answers.map((a: { questionId: string }) => a.questionId);
 
@@ -327,6 +387,21 @@ export const topicTestQuizSubmit = async (req: Request, res: Response) => {
             scorePercent,
             totalMarks: maxPossibleMarks
         };
+
+        const userId = req.user?.id;
+
+        if (userId) {
+            // Save Topic Status if user is logged in 
+            await UserTopicProgresses.findOneAndUpdate(
+                { user: userId, topic: topicId },
+                {
+                    status: "completed",
+                    completedAt: new Date()
+                },
+                { upsert: true, new: true }
+            );
+        }
+
 
         res.json({
             success: true,

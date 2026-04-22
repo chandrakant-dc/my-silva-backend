@@ -3,6 +3,12 @@ import mongoose from "mongoose";
 import { uploadToCloudinary } from "../config/uploadToCloudinary.js";
 import SubCategory from "../models/subcategory.model.js";
 
+interface AuthRequest extends Request {
+    user?: {
+        id: string;
+    };
+}
+
 export const createSubCategoryModel = async (req: Request, res: Response) => {
     try {
         const { name, categoryId, description } = req.body;
@@ -205,11 +211,12 @@ export const getAllSubCategoryModel = async (req: Request, res: Response) => {
 
 export const getSubCategoryByCategoryIdModel = async (req: Request, res: Response) => {
     try {
+        const userId = (req as any).user?.id;
         const categoryId = req.query.categoryId as string;
 
         const pipeline: any[] = [];
 
-        if (categoryId) {
+        if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
             pipeline.push({
                 $match: {
                     category: new mongoose.Types.ObjectId(categoryId)
@@ -230,7 +237,71 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
                 $addFields: {
                     topicCount: { $size: "$topics" }
                 }
-            },
+            }
+        );
+
+
+
+        if (userId) {
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: "usertopicprogresses",
+                        let: { topicIds: "$topics._id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $in: ["$topic", "$$topicIds"] },
+                                            { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                                            { $eq: ["$status", "completed"] }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $count: "completedCount"
+                            }
+                        ],
+                        as: "progressData"
+                    }
+                },
+                {
+                    $addFields: {
+                        completedTopics: {
+                            $ifNull: [
+                                { $arrayElemAt: ["$progressData.completedCount", 0] },
+                                0
+                            ]
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        overallPercentage: {
+                            $cond: [
+                                { $eq: ["$topicCount", 0] },
+                                0,
+                                {
+                                    $round: [
+                                        {
+                                            $multiply: [
+                                                { $divide: ["$completedTopics", "$topicCount"] },
+                                                100
+                                            ]
+                                        },
+                                        0
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            );
+        }
+
+        pipeline.push(
             {
                 $lookup: {
                     from: "categories",
@@ -248,6 +319,7 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
                     description: 1,
                     image: 1,
                     topicCount: 1,
+                    overallPercentage: 1,
                     "category._id": 1,
                     "category.name": 1
                 }
@@ -255,6 +327,56 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
         );
 
         const subcategories = await SubCategory.aggregate(pipeline);
+        // const categoryId = req.query.categoryId as string;
+
+        // const pipeline: any[] = [];
+
+        // if (categoryId) {
+        //     pipeline.push({
+        //         $match: {
+        //             category: new mongoose.Types.ObjectId(categoryId)
+        //         }
+        //     });
+        // }
+
+        // pipeline.push(
+        //     {
+        //         $lookup: {
+        //             from: "topics",
+        //             localField: "_id",
+        //             foreignField: "subcategory",
+        //             as: "topics"
+        //         }
+        //     },
+        //     {
+        //         $addFields: {
+        //             topicCount: { $size: "$topics" }
+        //         }
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "categories",
+        //             localField: "category",
+        //             foreignField: "_id",
+        //             as: "category"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$category"
+        //     },
+        //     {
+        //         $project: {
+        //             name: 1,
+        //             description: 1,
+        //             image: 1,
+        //             topicCount: 1,
+        //             "category._id": 1,
+        //             "category.name": 1
+        //         }
+        //     }
+        // );
+
+        // const subcategories = await SubCategory.aggregate(pipeline);
 
         res.status(200).json({
             status: true,
@@ -270,7 +392,7 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
 };
 
 
-export const getSubCategoryByIdModel = async (req: Request, res: Response) => {
+export const getSubCategoryByIdModel = async (req: AuthRequest, res: Response) => {
     try {
         const subCategoryId = req.params.subCategoryId as string;
 
@@ -281,7 +403,50 @@ export const getSubCategoryByIdModel = async (req: Request, res: Response) => {
             });
         }
 
-        const subcategory = await SubCategory.aggregate([
+        // const subcategory = await SubCategory.aggregate([
+        //     {
+        //         $match: {
+        //             _id: new mongoose.Types.ObjectId(subCategoryId)
+        //         }
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "topics",
+        //             localField: "_id",
+        //             foreignField: "subcategory",
+        //             as: "topics"
+        //         }
+        //     },
+        //     {
+        //         $addFields: {
+        //             topicCount: { $size: "$topics" }
+        //         }
+        //     },
+        //     {
+        //         $lookup: {
+        //             from: "categories",
+        //             localField: "category",
+        //             foreignField: "_id",
+        //             as: "category"
+        //         }
+        //     },
+        //     {
+        //         $unwind: "$category"
+        //     },
+        //     {
+        //         $project: {
+        //             name: 1,
+        //             description: 1,
+        //             image: 1,
+        //             topicCount: 1,
+        //             "category._id": 1,
+        //             "category.name": 1
+        //         }
+        //     }
+        // ]);
+        const userId = (req as any).user?.id;
+
+        const pipeline: any[] = [
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(subCategoryId)
@@ -299,7 +464,64 @@ export const getSubCategoryByIdModel = async (req: Request, res: Response) => {
                 $addFields: {
                     topicCount: { $size: "$topics" }
                 }
-            },
+            }
+        ];
+
+        if (userId) {
+            pipeline.push(
+                {
+                    $lookup: {
+                        from: "usertopicprogresses",
+                        let: { topicIds: "$topics._id" },
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $and: [
+                                            { $in: ["$topic", "$$topicIds"] },
+                                            { $eq: ["$user", new mongoose.Types.ObjectId(userId)] },
+                                            { $eq: ["$status", "completed"] }
+                                        ]
+                                    }
+                                }
+                            },
+                            {
+                                $count: "completedCount"
+                            }
+                        ],
+                        as: "progressData"
+                    }
+                },
+                {
+                    $addFields: {
+                        completedTopics: {
+                            $ifNull: [
+                                { $arrayElemAt: ["$progressData.completedCount", 0] },
+                                0
+                            ]
+                        }
+                    }
+                },
+                {
+                    $addFields: {
+                        progressPercentage: {
+                            $cond: [
+                                { $eq: ["$topicCount", 0] },
+                                0,
+                                {
+                                    $multiply: [
+                                        { $divide: ["$completedTopics", "$topicCount"] },
+                                        100
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            );
+        }
+
+        pipeline.push(
             {
                 $lookup: {
                     from: "categories",
@@ -317,11 +539,17 @@ export const getSubCategoryByIdModel = async (req: Request, res: Response) => {
                     description: 1,
                     image: 1,
                     topicCount: 1,
+                    completedTopics: 1,
+                    progressPercentage: 1,
                     "category._id": 1,
                     "category.name": 1
                 }
             }
-        ]);
+        );
+
+        const subcategory = await SubCategory.aggregate(pipeline);
+
+
 
         res.status(200).json({
             status: true,
