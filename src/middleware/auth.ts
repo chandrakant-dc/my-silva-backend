@@ -6,7 +6,7 @@ export const authMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies.token;
+    const token = req.cookies.vctid;
 
     if (!token) {
         return res.status(401).json({ status: false, message: "Unauthorized" });

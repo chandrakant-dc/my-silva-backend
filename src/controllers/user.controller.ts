@@ -57,7 +57,7 @@ export const registerUser = async (req: Request, res: Response) => {
         const userPayload = { email: email };
         const accessToken = generateAccessToken(userPayload);
 
-        // res.cookie("token", accessToken, {
+        // res.cookie("vctid", accessToken, {
         //     httpOnly: true,
         //     secure: false, // true in production (HTTPS)
         //     sameSite: "lax",
@@ -65,7 +65,7 @@ export const registerUser = async (req: Request, res: Response) => {
         // });
 
         // for production
-        res.cookie("token", accessToken, {
+        res.cookie("vctid", accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
@@ -105,7 +105,7 @@ export const loginUser = async (req: Request, res: Response) => {
         const userPayload = { id: loggedInUser.id };
         const accessToken = generateAccessToken(userPayload);
 
-        // res.cookie("token", accessToken, {
+        // res.cookie("vctid", accessToken, {
         //     httpOnly: true,
         //     secure: false, // true in production (HTTPS)
         //     sameSite: "lax",
@@ -113,7 +113,7 @@ export const loginUser = async (req: Request, res: Response) => {
         // });
 
         // for production
-        res.cookie("token", accessToken, {
+        res.cookie("vctid", accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
@@ -185,7 +185,7 @@ export const verifyUserOTP = async (req: Request, res: Response) => {
         const userPayload = { id: user.id };
         const accessToken = generateAccessToken(userPayload);
 
-        // res.cookie("token", accessToken, {
+        // res.cookie("vctid", accessToken, {
         //     httpOnly: true,
         //     secure: false, // true in production (HTTPS)
         //     sameSite: "lax",
@@ -193,7 +193,7 @@ export const verifyUserOTP = async (req: Request, res: Response) => {
         // });
 
         // for production
-        res.cookie("token", accessToken, {
+        res.cookie("vctid", accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: "strict",
@@ -231,7 +231,7 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
 };
 
 export const logoutUser = (req: Request, res: Response) => {
-    res.clearCookie("token", {
+    res.clearCookie("vctid", {
         httpOnly: true,
         secure: true, // true in production (HTTPS)
         sameSite: "none",

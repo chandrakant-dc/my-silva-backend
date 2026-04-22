@@ -4,7 +4,7 @@ import { Session } from "../models/session.model.js";
 export const trackTime = async (req: Request, res: Response) => {
     try {
         const { timeSpent, guestId } = req.body;
-        const token = req.cookies.token;
+        const token = req.cookies.vctid;
 
         if (token) {
             const decoded = jwt.verify(
