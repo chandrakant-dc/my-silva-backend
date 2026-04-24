@@ -23,4 +23,4 @@ const sessionSchema = new Schema<ISession>(
 sessionSchema.index({ userId: 1 });
 sessionSchema.index({ guestId: 1 });
 
-export const Session = mongoose.model<ISession>("Session", sessionSchema);
+export const GuestSession = mongoose.model<ISession>("GuestSession", sessionSchema);
