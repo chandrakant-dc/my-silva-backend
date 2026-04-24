@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import { uploadToCloudinary } from "../config/uploadToCloudinary.js";
 import Plan from "../models/plan.model.js";
 import UserSubscription from "../models/user-subscription.model.js";
+import { formatDate } from "../utils/date.format.js";
 
 export const createUserSubscription = async (req: Request, res: Response) => {
     try {
@@ -144,6 +145,29 @@ export const approveSubscription = async (req: Request, res: Response) => {
         return res.status(500).json({
             status: false,
             message: error.message || "Internal server error"
+        });
+    }
+};
+
+export const getUserSubscriptionDetails = async (req: Request, res: Response) => {
+    try {
+        const userId = (req as any).user?.id;
+        const userSubscription = await UserSubscription.findOne({ user: userId }).select("subscriptionStatus startDate endDate -_id");
+
+        res.status(200).json({
+            success: true,
+            data: {
+                ...(userSubscription?.subscriptionStatus != null && {
+                    subscription: userSubscription.subscriptionStatus,
+                    subscriptionStartDate: userSubscription?.startDate && formatDate(userSubscription.startDate),
+                    subscriptionEndDate: userSubscription?.endDate && formatDate(userSubscription.endDate)
+                })
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Something went wrong",
+            error: error,
         });
     }
 };
