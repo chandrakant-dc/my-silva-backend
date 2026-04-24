@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
+import UserSubscription from '../models/user-subscription.model.js';
 import User from '../models/user.model.js';
 import { sendOtpEmail } from '../services/email.service.js';
 import { getAllUsers, registerUserModel } from "../services/user.service.js";
@@ -214,6 +215,10 @@ export const verifyUserOTP = async (req: Request, res: Response) => {
 export const getUserDetails = async (req: AuthRequest, res: Response) => {
     try {
         const user = await User.findById(req.user?.id).select("-password");
+        if (!req.user?.id) {
+            throw new Error("User not authenticated");
+        }
+        const userSubscription = await UserSubscription.findOne({ user: req.user?.id }).select("subscriptionStatus startDate endDate -_id");
 
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -221,7 +226,14 @@ export const getUserDetails = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({
             success: true,
-            data: user,
+            data: {
+                ...user.toObject(),
+                ...(userSubscription?.subscriptionStatus != null && {
+                    subscription: userSubscription.subscriptionStatus,
+                    subscriptionStartDate: userSubscription.startDate,
+                    subscriptionEndDate: userSubscription.endDate
+                })
+            }
         });
     } catch (error) {
         res.status(500).json({
