@@ -6,7 +6,11 @@ export const optionalAuth = (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies?.vctid;
+    let token = req.cookies.vctid;
+
+    if (!token) {
+        token = req.cookies.vctaid;
+    }
 
     if (!token) {
         return next();

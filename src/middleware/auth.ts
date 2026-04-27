@@ -6,11 +6,16 @@ export const authMiddleware = (
     res: Response,
     next: NextFunction
 ) => {
-    const token = req.cookies.vctid;
+    let token = req.cookies.vctid;
+
+    if (!token) {
+        token = req.cookies.vctaid;
+    }
 
     if (!token) {
         return res.status(401).json({ status: false, message: "Unauthorized" });
     }
+
 
     try {
         const decoded = jwt.verify(

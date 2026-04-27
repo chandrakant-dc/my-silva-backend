@@ -3,10 +3,11 @@ import mongoose, { Document, model, Schema } from "mongoose";
 export interface IUserSubscription extends Document {
     user: mongoose.Types.ObjectId;
     plan: mongoose.Types.ObjectId;
-    subscriptionStatus: "unsubscribed" | "pending" | "activated";
+    subscriptionStatus: "rejected" | "pending" | "activated";
     receiptUrl?: string;
     startDate?: Date;
     endDate?: Date;
+    comment?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -25,7 +26,7 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
         },
         subscriptionStatus: {
             type: String,
-            enum: ["unsubscribed", "pending", "activated"],
+            enum: ["rejected", "pending", "activated"],
             default: "pending",
         },
         receiptUrl: {
@@ -38,6 +39,9 @@ const UserSubscriptionSchema = new Schema<IUserSubscription>(
         endDate: {
             type: Date,
         },
+        comment: {
+            type: String,
+        }
     },
     {
         timestamps: true,

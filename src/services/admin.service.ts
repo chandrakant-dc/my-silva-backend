@@ -110,7 +110,7 @@ export const verifyAdmin2FAService = async (req: Request, res: Response) => {
         const userPayload = { id: admin.id };
         const accessToken = generateAccessToken(userPayload);
 
-        // res.cookie("vctid", accessToken, {
+        // res.cookie("vctaid", accessToken, {
         //     httpOnly: true,
         //     secure: false, // true in production (HTTPS)
         //     sameSite: "lax",
@@ -118,7 +118,7 @@ export const verifyAdmin2FAService = async (req: Request, res: Response) => {
         // });
 
         // for production
-        res.cookie("vctid", accessToken, {
+        res.cookie("vctaid", accessToken, {
             httpOnly: true,
             secure: true,
             sameSite: "none",

@@ -76,6 +76,14 @@ export const createUserSubscription = async (req: Request, res: Response) => {
 export const approveSubscription = async (req: Request, res: Response) => {
     try {
         const { subscriptionId } = req.params;
+        const { comment, type } = req.body;
+
+        if (!type) {
+            return res.status(400).json({
+                status: false,
+                message: "Action type is required"
+            });
+        }
 
         if (!subscriptionId) {
             return res.status(400).json({
@@ -122,22 +130,25 @@ export const approveSubscription = async (req: Request, res: Response) => {
         await UserSubscription.updateMany(
             {
                 user: subscription.user,
-                subscriptionStatus: "activated"
+                subscriptionStatus: type === "approve" ? "activated" : "rejected"
             },
             {
-                subscriptionStatus: "unsubscribed"
+                subscriptionStatus: "rejected"
             }
         );
 
-        subscription.subscriptionStatus = "activated";
-        subscription.startDate = startDate;
-        subscription.endDate = endDate;
+        subscription.subscriptionStatus = type === "approve" ? "activated" : "rejected";
+        if (type === "approve") {
+            subscription.startDate = startDate;
+            subscription.endDate = endDate;
+        }
+        subscription.comment = comment ? comment : "";
 
         await subscription.save();
 
         return res.status(200).json({
             status: true,
-            message: "Subscription activated successfully",
+            message: `Subscription ${type === "approve" ? "activated" : "rejected"} successfully`,
             data: subscription
         });
 
@@ -152,7 +163,7 @@ export const approveSubscription = async (req: Request, res: Response) => {
 export const getUserSubscriptionDetails = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user?.id;
-        const userSubscription = await UserSubscription.findOne({ user: userId }).select("subscriptionStatus startDate endDate -_id");
+        const userSubscription = await UserSubscription.findOne({ user: userId }).sort({ _id: -1 }).select("subscriptionStatus startDate endDate -_id");
 
         res.status(200).json({
             success: true,
@@ -171,3 +182,25 @@ export const getUserSubscriptionDetails = async (req: Request, res: Response) =>
         });
     }
 };
+
+export const getAllUserSubscriptions = async (req: Request, res: Response) => {
+    try {
+        const userSubscription = await UserSubscription.find({}).populate({
+            path: "user",
+            select: "fullName email"
+        }).populate({
+            path: "plan",
+            select: "name price"
+        });
+
+        res.status(200).json({
+            success: true,
+            data: userSubscription
+        });
+    } catch (error) {
+        return res.status(500).json({
+            message: "Something went wrong",
+            error: error,
+        });
+    }
+}

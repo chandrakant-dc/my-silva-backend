@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import type { Request, Response } from "express";
 import User from '../models/user.model.js';
 import { sendOtpEmail } from '../services/email.service.js';
-import { getAllUsers, registerUserModel } from "../services/user.service.js";
+import { getAllUsers } from "../services/user.service.js";
 import { generateOtp } from '../utils/generateOtp.js';
 import { generateAccessToken } from '../utils/jwtUtils.js';
 // import { sendOTPEmail } from '../utils/sendMail.js';
@@ -21,50 +21,35 @@ export const getUsers = async (req: Request, res: Response) => {
 export const registerUser = async (req: Request, res: Response) => {
     try {
         const { email, password, fullName, mobile } = req.body;
-        if (!email) {
-            res.status(400).json({
-                message: "email is required"
-            })
-            return;
+
+        if (!email || !password) {
+            return res.status(400).json({
+                message: "Email and password are required"
+            });
         }
-        if (!password) {
-            res.status(400).json({
-                message: "password is required"
-            })
-            return;
+
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({
+                message: "User already exists"
+            });
         }
 
         const saltRounds = 10;
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        const userInfo = {
+        const newUser = new User({
             fullName,
             mobile,
             email,
             password: hashedPassword
-        }
-        const isUserExist = await registerUserModel(userInfo);
+        });
 
-        if (isUserExist === true) {
-            res.status(400).json({
-                message: "user already exist"
-            })
-            return;
-        }
+        const savedUser = await newUser.save();
 
-        await registerUserModel(req.body);
-
-        const userPayload = { email: email };
+        const userPayload = { id: savedUser._id };
         const accessToken = generateAccessToken(userPayload);
 
-        // res.cookie("vctid", accessToken, {
-        //     httpOnly: true,
-        //     secure: false, // true in production (HTTPS)
-        //     sameSite: "lax",
-        //     maxAge: 1 * 24 * 60 * 60 * 1000, // 1 days
-        // });
-
-        // for production
         res.cookie("vctid", accessToken, {
             httpOnly: true,
             secure: true,
@@ -72,16 +57,18 @@ export const registerUser = async (req: Request, res: Response) => {
             maxAge: 1 * 24 * 60 * 60 * 1000,
         });
 
-        res.status(201).json({
-            message: "user registered successfully!"
-        })
+        return res.status(201).json({
+            message: "User registered successfully!",
+            userId: savedUser._id
+        });
+
     } catch (error) {
-        res.status(400).json({
-            message: "something went wrong",
-            error: error
-        })
+        return res.status(500).json({
+            message: "Something went wrong",
+            error
+        });
     }
-}
+};
 
 
 export const loginUser = async (req: Request, res: Response) => {
@@ -213,11 +200,8 @@ export const verifyUserOTP = async (req: Request, res: Response) => {
 
 export const getUserDetails = async (req: AuthRequest, res: Response) => {
     try {
-        const user = await User.findById(req.user?.id).select("-password");
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
+        const user = await User.findById(req.user?.id).select("-password");
 
         res.status(200).json({
             success: true,

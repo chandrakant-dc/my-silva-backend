@@ -86,7 +86,7 @@ export const verifyAdmin2FA = async (req: Request, res: Response) => {
 };
 
 export const logoutAdmin = (req: Request, res: Response) => {
-    res.clearCookie("vctid", {
+    res.clearCookie("vctaid", {
         httpOnly: true,
         secure: true, // true in production (HTTPS)
         sameSite: "none",
