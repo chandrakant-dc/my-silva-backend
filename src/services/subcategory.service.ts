@@ -130,7 +130,7 @@ export const updateSubCategoryModel = async (req: Request, res: Response) => {
                 description,
                 category: categoryId
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updatedCategory) {

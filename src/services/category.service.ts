@@ -83,7 +83,7 @@ export const updateCategoryModel = async (req: Request, res: Response) => {
                 name: name.trim(),
                 image: imageUrl
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         return res.status(200).json({

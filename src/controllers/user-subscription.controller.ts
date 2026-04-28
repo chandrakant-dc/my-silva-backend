@@ -88,7 +88,7 @@ export const approveSubscription = async (req: Request, res: Response) => {
         if (!subscriptionId) {
             return res.status(400).json({
                 status: false,
-                message: "subscription ID required"
+                message: "Subscription ID required"
             });
         }
 
@@ -116,6 +116,7 @@ export const approveSubscription = async (req: Request, res: Response) => {
         }
 
         const plan = await Plan.findById(subscription.plan);
+
         if (!plan) {
             return res.status(404).json({
                 status: false,
@@ -123,32 +124,49 @@ export const approveSubscription = async (req: Request, res: Response) => {
             });
         }
 
-        const startDate = new Date();
-        const endDate = new Date();
-        endDate.setDate(startDate.getDate() + plan.durationInDays);
-
+        // Reject previous active subscriptions
         await UserSubscription.updateMany(
             {
                 user: subscription.user,
-                subscriptionStatus: type === "approve" ? "activated" : "rejected"
+                subscriptionStatus: "activated"
             },
             {
                 subscriptionStatus: "rejected"
             }
         );
 
-        subscription.subscriptionStatus = type === "approve" ? "activated" : "rejected";
+        subscription.subscriptionStatus =
+            type === "approve" ? "activated" : "rejected";
+
         if (type === "approve") {
+
+            const startDate = new Date();
+
+            const endDate = new Date(startDate);
+
+            endDate.setMonth(
+                endDate.getMonth() + 1 // plan.durationInMonths
+            );
+
+            endDate.setDate(endDate.getDate() - 1);
+
+            // Optional: set expiry time to end of day
+            // endDate.setHours(23, 59, 59, 999);
+
             subscription.startDate = startDate;
             subscription.endDate = endDate;
         }
-        subscription.comment = comment ? comment : "";
+
+        subscription.comment = comment || "";
 
         await subscription.save();
 
         return res.status(200).json({
             status: true,
-            message: `Subscription ${type === "approve" ? "activated" : "rejected"} successfully`,
+            message: `Subscription ${type === "approve"
+                ? "activated"
+                : "rejected"
+                } successfully`,
             data: subscription
         });
 
@@ -159,6 +177,93 @@ export const approveSubscription = async (req: Request, res: Response) => {
         });
     }
 };
+
+// export const approveSubscription = async (req: Request, res: Response) => {
+//     try {
+//         const { subscriptionId } = req.params;
+//         const { comment, type } = req.body;
+
+//         if (!type) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Action type is required"
+//             });
+//         }
+
+//         if (!subscriptionId) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "subscription ID required"
+//             });
+//         }
+
+//         if (!mongoose.Types.ObjectId.isValid(subscriptionId as string)) {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Invalid subscription ID"
+//             });
+//         }
+
+//         const subscription = await UserSubscription.findById(subscriptionId);
+
+//         if (!subscription) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: "Subscription not found"
+//             });
+//         }
+
+//         if (subscription.subscriptionStatus === "activated") {
+//             return res.status(400).json({
+//                 status: false,
+//                 message: "Subscription already activated"
+//             });
+//         }
+
+//         const plan = await Plan.findById(subscription.plan);
+//         if (!plan) {
+//             return res.status(404).json({
+//                 status: false,
+//                 message: "Plan not found"
+//             });
+//         }
+
+//         const startDate = new Date();
+//         const endDate = new Date();
+//         endDate.setDate(startDate.getDate() + plan.durationInDays); //instead of durationInDays we use period in months and calculate end date based on that
+
+//         await UserSubscription.updateMany(
+//             {
+//                 user: subscription.user,
+//                 subscriptionStatus: type === "approve" ? "activated" : "rejected"
+//             },
+//             {
+//                 subscriptionStatus: "rejected"
+//             }
+//         );
+
+//         subscription.subscriptionStatus = type === "approve" ? "activated" : "rejected";
+//         if (type === "approve") {
+//             subscription.startDate = startDate;
+//             subscription.endDate = endDate;
+//         }
+//         subscription.comment = comment ? comment : "";
+
+//         await subscription.save();
+
+//         return res.status(200).json({
+//             status: true,
+//             message: `Subscription ${type === "approve" ? "activated" : "rejected"} successfully`,
+//             data: subscription
+//         });
+
+//     } catch (error: any) {
+//         return res.status(500).json({
+//             status: false,
+//             message: error.message || "Internal server error"
+//         });
+//     }
+// };
 
 export const getUserSubscriptionDetails = async (req: Request, res: Response) => {
     try {

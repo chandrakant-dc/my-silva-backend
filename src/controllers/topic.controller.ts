@@ -179,7 +179,7 @@ export const updateTopic = async (req: Request, res: Response) => {
                 topicName,
                 description,
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updatedTopic) {
