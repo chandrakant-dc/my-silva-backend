@@ -213,8 +213,29 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
     try {
         const userId = (req as any).user?.id;
         const categoryId = req.query.categoryId as string;
+        const search = req.query.search as string;
 
         const pipeline: any[] = [];
+
+        const matchStage: any = {};
+
+
+        if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
+            matchStage.category = new mongoose.Types.ObjectId(categoryId);
+        }
+
+        if (search) {
+            matchStage.name = {
+                $regex: search,
+                $options: "i"
+            };
+        }
+
+        if (Object.keys(matchStage).length > 0) {
+            pipeline.push({
+                $match: matchStage
+            });
+        }
 
         if (categoryId && mongoose.Types.ObjectId.isValid(categoryId)) {
             pipeline.push({
@@ -327,56 +348,6 @@ export const getSubCategoryByCategoryIdModel = async (req: Request, res: Respons
         );
 
         const subcategories = await SubCategory.aggregate(pipeline);
-        // const categoryId = req.query.categoryId as string;
-
-        // const pipeline: any[] = [];
-
-        // if (categoryId) {
-        //     pipeline.push({
-        //         $match: {
-        //             category: new mongoose.Types.ObjectId(categoryId)
-        //         }
-        //     });
-        // }
-
-        // pipeline.push(
-        //     {
-        //         $lookup: {
-        //             from: "topics",
-        //             localField: "_id",
-        //             foreignField: "subcategory",
-        //             as: "topics"
-        //         }
-        //     },
-        //     {
-        //         $addFields: {
-        //             topicCount: { $size: "$topics" }
-        //         }
-        //     },
-        //     {
-        //         $lookup: {
-        //             from: "categories",
-        //             localField: "category",
-        //             foreignField: "_id",
-        //             as: "category"
-        //         }
-        //     },
-        //     {
-        //         $unwind: "$category"
-        //     },
-        //     {
-        //         $project: {
-        //             name: 1,
-        //             description: 1,
-        //             image: 1,
-        //             topicCount: 1,
-        //             "category._id": 1,
-        //             "category.name": 1
-        //         }
-        //     }
-        // );
-
-        // const subcategories = await SubCategory.aggregate(pipeline);
 
         res.status(200).json({
             status: true,
